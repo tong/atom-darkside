@@ -1,0 +1,4 @@
+'atom-workspace':
+    'ctrl-shift-f12': 'darkside:settings'
+    'f9': 'darkside:lighter'
+    'f10': 'darkside:darker'

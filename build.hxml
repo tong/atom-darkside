@@ -1,0 +1,9 @@
+-js lib/darkside.js
+Main
+-cp src
+-lib atom
+-lib om.core
+-lib om.color
+-lib hxnodejs-serialport
+-dce full
+-debug
