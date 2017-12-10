@@ -15,10 +15,12 @@ class Main {
 
     static inline function __init__() untyped module.exports = Main;
 
+    static var color : RGB;
     static var allowedDevices : Array<String>;
     static var controllers : Array<Controller>;
-    static var color : RGB;
     static var settings : SettingsView;
+    static var timer : Timer;
+    static var dirty : Bool;
 
     static function activate( state ) {
 
@@ -27,6 +29,7 @@ class Main {
         allowedDevices = [];
         controllers = [];
         color = 0xffffff;
+        dirty = true;
 
         if( state != null ) {
             if( state.color != null ) color = state.color;
@@ -78,6 +81,9 @@ class Main {
                             //trace(n,o);
                         });
                         */
+
+                        timer = new Timer( Std.int(1000/60) );
+                        timer.run = handleTimer;
                     }
                 });
             }, getConfigValue( 'startdelay' ) );
@@ -85,6 +91,7 @@ class Main {
     }
 
     static function deactivate() {
+        if( timer != null ) timer.stop();
         settings.destroy();
         for( ctrl in controllers ) ctrl.disconnect();
     }
@@ -93,15 +100,18 @@ class Main {
         return { color: color };
     }
 
+    static function handleTimer() {
+        if( dirty ) {
+            for( controller in controllers ) controller.setColor( color );
+            dirty = false;
+        }
+    }
+
     static function changeColor( color : RGB ) {
         if( color == Main.color )
             return;
         Main.color = color;
-        for( controller in controllers ) {
-            controller.setColor( color, function(?e){
-                //trace(e);
-            } );
-        }
+        dirty = true;
     }
 
     static function searchControllers( callback : ?Error->?Array<Controller>->Void ) {
