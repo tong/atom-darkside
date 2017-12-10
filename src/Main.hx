@@ -1,6 +1,8 @@
 
 import Atom.commands;
+import Atom.config;
 import Atom.notifications;
+import Atom.workspace;
 import haxe.Timer;
 import js.Browser.document;
 import js.Error;
@@ -13,10 +15,7 @@ class Main {
 
     static inline function __init__() untyped module.exports = Main;
 
-    static var allowedDevices = [
-        '74034313938351717211' // Arduino Mega
-    ];
-
+    static var allowedDevices : Array<String>;
     static var controllers : Array<Controller>;
     static var color : RGB;
     static var settings : SettingsView;
@@ -25,6 +24,7 @@ class Main {
 
         trace( 'Atom-darkside ' );
 
+        allowedDevices = [];
         controllers = [];
         color = 0xffffff;
 
@@ -32,39 +32,56 @@ class Main {
             if( state.color != null ) color = state.color;
         }
 
-        Timer.delay( function(){
-
-            searchControllers( function(?e,?controllers){
-
-                if( e != null )
-                    notifications.addError( e.message );
-
-                else {
-
-                    Main.controllers = controllers;
-
-                    Timer.delay( function(){
-                        changeColor( 0x0000ff  );
-                    }, 500 );
-
-                }
-            });
-        }, getConfigValue( 'startdelay' ) );
-
         settings = new SettingsView( color, changeColor );
 
-        commands.add( 'atom-workspace', 'darkside:off', function(e) {
-            changeColor( 0x000000 );
-        } );
-        commands.add( 'atom-workspace', 'darkside:darker', function(e) {
-            changeColor( color.darker( 0.1 ) );
-        } );
-        commands.add( 'atom-workspace', 'darkside:lighter', function(e) {
-            changeColor( color.lighter( 0.1 ) );
-        } );
-        commands.add( 'atom-workspace', 'darkside:settings', function(e) {
-            settings.toggle();
-        } );
+        var deviceId : String = getConfigValue( 'device' );
+        if( deviceId == null || deviceId.length == 0 ) {
+            /*
+            Timer.delay( function(){
+                workspace.open("atom://config/packages/darkside");
+            }, 1000 );
+            */
+        } else {
+
+            allowedDevices.push( deviceId );
+
+            Timer.delay( function(){
+                searchControllers( function(?e,?controllers){
+                    //trace(e,controllers);
+
+                    if( e != null )
+                        notifications.addError( e.message );
+
+                    else {
+
+                        Main.controllers = controllers;
+
+                        Timer.delay( function(){
+                            changeColor( color  );
+                        }, 500 );
+
+                        commands.add( 'atom-workspace', 'darkside:off', function(e) {
+                            changeColor( 0x000000 );
+                        } );
+                        commands.add( 'atom-workspace', 'darkside:darker', function(e) {
+                            changeColor( color.darker( 0.1 ) );
+                        } );
+                        commands.add( 'atom-workspace', 'darkside:lighter', function(e) {
+                            changeColor( color.lighter( 0.1 ) );
+                        } );
+                        commands.add( 'atom-workspace', 'darkside:settings', function(e) {
+                            settings.toggle();
+                        } );
+
+                        /*
+                        config.onDidChange( 'darkside', function(n,o){
+                            //trace(n,o);
+                        });
+                        */
+                    }
+                });
+            }, getConfigValue( 'startdelay' ) );
+        }
     }
 
     static function deactivate() {
@@ -85,17 +102,6 @@ class Main {
                 //trace(e);
             } );
         }
-    }
-
-    static function provideService() {
-        return {
-            get : function() {
-                return color;
-            },
-            set : function( color : Int, ?opts : Dynamic) {
-                changeColor( color );
-            }
-        };
     }
 
     static function searchControllers( callback : ?Error->?Array<Controller>->Void ) {
@@ -130,6 +136,17 @@ class Main {
                 }
             }
         });
+    }
+
+    static function provideService() {
+        return {
+            get : function() {
+                return color;
+            },
+            set : function( color : Int, ?opts : Dynamic) {
+                changeColor( color );
+            }
+        };
     }
 
     static inline function getConfigValue<T>( id : String ) : T {
