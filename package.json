@@ -1,9 +1,9 @@
 {
     "name": "darkside",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "Dark side of the monitor",
     "keywords": [
-        "backlight","serial","tty","UART","led","arduino"
+        "backlight","light","serial","tty","UART","led","arduino"
     ],
     "repository": "https://github.com/tong/atom-darkside",
     "license": "MIT",
@@ -29,12 +29,11 @@
         "serialport": "6.0.4"
     },
     "configSchema": {
-        "devices": {
-            "title": "Devices",
-            "description": "IDs of controller devices allowed to connect",
-            "type": "integer",
-            "minimum": 0,
-            "default": 1,
+        "device": {
+            "title": "Controller",
+            "description": "ID of the controller device",
+            "type": "string",
+            "default": "",
             "order": 1
         },
         "baud_rate": {
@@ -49,8 +48,18 @@
             "description": "The delay in seconds before searching for devices.",
             "type": "integer",
             "minimum": 0,
+            "maximum": 10,
             "default": 1,
             "order": 3
+        },
+        "interval": {
+            "title": "Update Interval",
+            "description": "Time in ms between updates sent to controller",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 8,
+            "order": 4
         }
     }
 }
