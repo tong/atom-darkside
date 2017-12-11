@@ -24,18 +24,24 @@ class Main {
 
     static function activate( state ) {
 
+        trace(state);
+
+        if( state == null ) state = {
+            color : 0x20515B,
+            settings: {
+                open: false
+            }
+        };
+
         trace( 'Atom-darkside ' );
 
         allowedDevices = [];
         controllers = [];
-        color = 0xffffff;
         dirty = true;
 
-        if( state != null ) {
-            if( state.color != null ) color = state.color;
-        }
+        color = state.color;
 
-        settings = new SettingsView( color, changeColor );
+        settings = new SettingsView( color, changeColor, state.settings.open );
 
         var deviceId : String = getConfigValue( 'device' );
         if( deviceId == null || deviceId.length == 0 ) {
@@ -97,7 +103,10 @@ class Main {
     }
 
     static function serialize() {
-        return { color: color };
+        return {
+            color: color,
+            settings: settings.serialize()
+        };
     }
 
     static function handleTimer() {
